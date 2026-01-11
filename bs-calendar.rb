@@ -5,7 +5,7 @@ class BsCalendar < Formula
   url "https://github.com/projectashik/bs-calendar-mac/releases/download/v1.0.7-4ce619d/bs-calendar-macos.dmg"
   sha256 "67aad7e41d1d37bd70c7dc0e79cc14acb1e5b8604c32ca20f691d5ec96008e45"
 
-  depends_on macos: ">= :ventura"
+  depends_on macos: :ventura
 
   def install
     # Mount the DMG
