@@ -38,15 +38,58 @@ jobs:
                      CODE_SIGN_IDENTITY="" \
                      CODE_SIGNING_REQUIRED=NO
       
-      - name: Create ZIP
+      - name: Create DMG
         run: |
-          cd build/Build/Products/Release
-          zip -r ../../../../bs-calendar-macos.zip bs-calendar.app
-          cd ../../../../
+          APP_PATH="build/Build/Products/Release/bs-calendar.app"
+          DMG_NAME="bs-calendar-macos.dmg"
+          TEMP_DMG="temp.dmg"
+          VOLUME_NAME="BS Calendar"
+          
+          # Create temporary DMG (50MB)
+          hdiutil create -size 50m -fs HFS+ -volname "${VOLUME_NAME}" "${TEMP_DMG}"
+          
+          # Mount the DMG
+          hdiutil attach "${TEMP_DMG}" -mountpoint "/Volumes/${VOLUME_NAME}"
+          
+          # Copy app to DMG
+          cp -R "${APP_PATH}" "/Volumes/${VOLUME_NAME}/"
+          
+          # Create Applications symlink for drag-and-drop
+          ln -s /Applications "/Volumes/${VOLUME_NAME}/Applications"
+          
+          # Set DMG window appearance
+          echo '
+          tell application "Finder"
+            tell disk "'${VOLUME_NAME}'"
+              open
+              set current view of container window to icon view
+              set toolbar visible of container window to false
+              set statusbar visible of container window to false
+              set the bounds of container window to {100, 100, 600, 400}
+              set viewOptions to the icon view options of container window
+              set arrangement of viewOptions to not arranged
+              set icon size of viewOptions to 100
+              set position of item "bs-calendar.app" of container window to {120, 150}
+              set position of item "Applications" of container window to {380, 150}
+              update without registering applications
+              delay 2
+              close
+            end tell
+          end tell
+          ' | osascript
+          
+          # Unmount
+          hdiutil detach "/Volumes/${VOLUME_NAME}"
+          
+          # Convert to compressed, read-only DMG
+          hdiutil convert "${TEMP_DMG}" -format UDZO -o "${DMG_NAME}"
+          
+          # Clean up
+          rm -f "${TEMP_DMG}"
           
           # Get file size
-          SIZE=$(du -h bs-calendar-macos.zip | cut -f1)
-          echo "File size: ${SIZE}"
+          SIZE=$(du -h ${DMG_NAME} | cut -f1)
+          echo "DMG created: ${DMG_NAME} (${SIZE})"
           echo "size=${SIZE}" >> $GITHUB_OUTPUT
         id: package
       
@@ -77,25 +120,17 @@ jobs:
             
             ## 📥 Download
             
-            **File:** `bs-calendar-macos.zip` (${{ steps.package.outputs.size }})
+            **File:** `bs-calendar-macos.dmg` (${{ steps.package.outputs.size }})
             
-            ## 🚀 Quick Install
+            ## 🚀 Installation
             
-            ```bash
-            # Download and install (one command)
-            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/bs-calendar-macos.zip -o ~/Downloads/bs-calendar.zip
-            unzip ~/Downloads/bs-calendar.zip -d ~/Downloads/
-            mv ~/Downloads/bs-calendar.app /Applications/
-            xattr -cr /Applications/bs-calendar.app
-            open /Applications/bs-calendar.app
-            ```
+            1. Download `bs-calendar-macos.dmg` below
+            2. Open the DMG file
+            3. Drag `bs-calendar.app` to the **Applications** folder
+            4. Eject the DMG
+            5. Launch from Applications (or Spotlight)
             
-            ## 📋 Manual Install
-            
-            1. Download `bs-calendar-macos.zip` below
-            2. Extract the ZIP file
-            3. Move `bs-calendar.app` to Applications folder
-            4. Right-click app → **Open** (first time only)
+            > **Note:** On first launch, right-click the app and select **Open** to bypass Gatekeeper
             
             ## ✨ Features
             
@@ -120,7 +155,7 @@ jobs:
             ```
             ${{ github.event.commits[0].modified }}
             ```
-          files: bs-calendar-macos.zip
+          files: bs-calendar-macos.dmg
           draft: false
           prerelease: false
           make_latest: true
