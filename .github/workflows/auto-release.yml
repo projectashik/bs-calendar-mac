@@ -35,8 +35,8 @@ jobs:
                      -scheme bs-calendar \
                      -configuration Release \
                      -derivedDataPath build \
-                     CODE_SIGN_IDENTITY="" \
-                     CODE_SIGNING_REQUIRED=NO
+                     CODE_SIGN_IDENTITY="-" \
+                     CODE_SIGNING_ALLOWED=YES
       
       - name: Create DMG
         run: |
@@ -44,6 +44,13 @@ jobs:
           DMG_NAME="bs-calendar-macos.dmg"
           TEMP_DMG="temp.dmg"
           VOLUME_NAME="BS Calendar"
+          
+          # Ad-hoc sign the app (required for Gatekeeper)
+          echo "🔏 Signing app with ad-hoc signature..."
+          codesign --force --deep --sign - "${APP_PATH}"
+          
+          # Verify signature
+          codesign --verify --verbose "${APP_PATH}"
           
           # Create temporary DMG (50MB)
           hdiutil create -size 50m -fs HFS+ -volname "${VOLUME_NAME}" "${TEMP_DMG}"
@@ -130,7 +137,11 @@ jobs:
             4. Eject the DMG
             5. Launch from Applications (or Spotlight)
             
-            > **Note:** On first launch, right-click the app and select **Open** to bypass Gatekeeper
+            > **⚠️ Important:** This app is **ad-hoc signed** (not notarized). On first launch:
+            > 1. Right-click the app → **Open** 
+            > 2. Click **Open** in the dialog
+            > 
+            > Or run in Terminal: `xattr -cr /Applications/bs-calendar.app && open /Applications/bs-calendar.app`
             
             ## ✨ Features
             
