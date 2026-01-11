@@ -55,9 +55,15 @@ class StatusBarController: ObservableObject {
     private func showMenu() {
         let menu = NSMenu()
         
-        menu.addItem(NSMenuItem(title: "Preferences...", action: #selector(openPreferences), keyEquivalent: ","))
+        let preferencesItem = NSMenuItem(title: "Preferences...", action: #selector(openPreferences), keyEquivalent: ",")
+        preferencesItem.target = self
+        menu.addItem(preferencesItem)
+        
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit BS Calendar", action: #selector(quitApp), keyEquivalent: "q"))
+        
+        let quitItem = NSMenuItem(title: "Quit BS Calendar", action: #selector(quitApp), keyEquivalent: "q")
+        quitItem.target = self
+        menu.addItem(quitItem)
         
         statusItem.menu = menu
         statusItem.button?.performClick(nil)

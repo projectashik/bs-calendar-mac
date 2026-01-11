@@ -11,8 +11,10 @@ class BsCalendar < Formula
     # Mount the DMG to /tmp to avoid conflicts
     system "hdiutil", "attach", cached_download, "-mountpoint", "/tmp/bs-calendar-dmg", "-nobrowse", "-quiet"
     
-    # Copy the app using cp -R
-    system "cp", "-R", "/tmp/bs-calendar-dmg/bs-calendar.app", "#{prefix}/"
+    # Install to /Applications for Spotlight visibility
+    app = Pathname.new("/Applications/bs-calendar.app")
+    FileUtils.rm_rf(app) if app.exist?
+    system "cp", "-R", "/tmp/bs-calendar-dmg/bs-calendar.app", "/Applications/"
     
     # Unmount
     system "hdiutil", "detach", "/tmp/bs-calendar-dmg", "-force", "-quiet"
@@ -20,7 +22,7 @@ class BsCalendar < Formula
     # Create a wrapper script
     (bin/"bs-calendar").write <<~EOS
       #!/bin/bash
-      open "#{prefix}/bs-calendar.app"
+      open /Applications/bs-calendar.app
     EOS
     
     chmod 0755, bin/"bs-calendar"
@@ -28,17 +30,17 @@ class BsCalendar < Formula
 
   def post_install
     # Remove quarantine attribute automatically
-    system "xattr", "-cr", "#{prefix}/bs-calendar.app"
+    system "xattr", "-cr", "/Applications/bs-calendar.app"
   end
 
   def caveats
     <<~EOS
-      BS Calendar has been installed!
+      BS Calendar has been installed to /Applications!
 
       To launch:
         bs-calendar
 
-      Or use Spotlight to search for "BS Calendar"
+      Or use Spotlight (⌘+Space) to search for "BS Calendar"
 
       The app will appear in your menu bar when launched.
     EOS
