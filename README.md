@@ -33,7 +33,7 @@ A lightweight, high-performance macOS menu bar application that displays the cur
 ### Homebrew (Recommended)
 
 ```bash
-brew tap projectashik/bs-calendar
+brew tap projectashik/bs-calendar-mac
 brew install bs-calendar
 ```
 

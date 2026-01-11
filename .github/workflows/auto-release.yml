@@ -130,7 +130,7 @@ jobs:
             ### Option 1: Homebrew (Recommended)
             
             ```bash
-            brew tap projectashik/bs-calendar
+            brew tap projectashik/bs-calendar-mac
             brew install bs-calendar
             ```
             
@@ -214,5 +214,5 @@ jobs:
           echo "📥 Download: https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/bs-calendar-macos.dmg"
           echo ""
           echo "🍺 Homebrew install:"
-          echo "   brew tap projectashik/bs-calendar"
+          echo "   brew tap projectashik/bs-calendar-mac"
           echo "   brew install bs-calendar"
