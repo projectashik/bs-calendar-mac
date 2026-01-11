@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build macOS App
@@ -31,14 +34,30 @@ jobs:
       
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: bs-calendar-macos.zip
+          tag_name: ${{ github.ref_name || 'v1.0.0' }}
+          name: BS Calendar ${{ github.ref_name || 'v1.0.0' }}
           body: |
-            ## Install
-            1. Download `bs-calendar-macos.zip`
-            2. Extract and move `bs-calendar.app` to Applications
-            3. Right-click app → Open (first time only)
+            ## 📥 Download
             
-            ## Requirements
-            macOS 13.0+
+            **File:** `bs-calendar-macos.zip` (~500KB)
+            
+            ## 🚀 Install
+            1. Download `bs-calendar-macos.zip`
+            2. Extract the ZIP file
+            3. Move `bs-calendar.app` to Applications folder
+            4. Right-click app → Open (first time only)
+            
+            ## ✨ Features
+            - Menu bar Nepali calendar
+            - Nepali numerals support (०१२३)
+            - Light/Dark theme
+            - Launch at login
+            
+            ## 📋 Requirements
+            macOS 13.0 or later
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
