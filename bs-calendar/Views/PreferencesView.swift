@@ -12,8 +12,26 @@ struct PreferencesView: View {
     @AppStorage("showMonthInMenuBar") private var showMonthInMenuBar = false
     @AppStorage("weekStartDay") private var weekStartDay = 0
     @State private var launchAtLogin = LaunchAtLogin.shared.isEnabled
+    @State private var selectedTab = 0
     
     var body: some View {
+        TabView(selection: $selectedTab) {
+            generalTab
+                .tabItem {
+                    Label("General", systemImage: "gear")
+                }
+                .tag(0)
+            
+            aboutTab
+                .tabItem {
+                    Label("About", systemImage: "info.circle")
+                }
+                .tag(1)
+        }
+        .frame(width: 450, height: 380)
+    }
+    
+    private var generalTab: some View {
         VStack(spacing: 0) {
             Form {
                 Section(header: Text("Display").font(.headline).padding(.top, 12)) {
@@ -34,7 +52,7 @@ struct PreferencesView: View {
                 }
                 .padding(.bottom, 8)
                 
-                Section(header: Text("General").font(.headline)) {
+                Section(header: Text("Startup").font(.headline)) {
                     Toggle("Launch at Login", isOn: $launchAtLogin)
                         .help("Start BS Calendar automatically when you log in")
                         .onChange(of: launchAtLogin) { newValue in
@@ -44,24 +62,49 @@ struct PreferencesView: View {
             }
             .formStyle(.grouped)
             .padding()
+        }
+    }
+    
+    private var aboutTab: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "calendar.badge.clock")
+                .font(.system(size: 64))
+                .foregroundColor(.accentColor)
+                .padding(.top, 40)
             
-            Divider()
+            Text("BS Calendar")
+                .font(.system(size: 24, weight: .semibold))
             
-            HStack {
-                Text("BS Calendar v1.0")
-                    .font(.caption)
+            Text("Version 1.0")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+            
+            VStack(spacing: 8) {
+                Text("A lightweight menu bar app for")
+                    .font(.system(size: 13))
                     .foregroundColor(.secondary)
+                Text("displaying Bikram Sambat (Nepali) dates")
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.top, 4)
+            
+            Spacer()
+            
+            HStack(spacing: 20) {
+                Link(destination: URL(string: "https://github.com")!) {
+                    Label("GitHub", systemImage: "arrow.up.forward.square")
+                        .font(.system(size: 12))
+                }
                 
-                Spacer()
-                
-                Button("Quit") {
+                Button("Quit BS Calendar") {
                     NSApplication.shared.terminate(nil)
                 }
                 .buttonStyle(.bordered)
             }
-            .padding()
+            .padding(.bottom, 20)
         }
-        .frame(width: 420, height: 340)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
