@@ -9,10 +9,10 @@ class BsCalendar < Formula
 
   def install
     # Mount the DMG
-    system "hdiutil", "attach", cached_download, "-mountpoint", "/Volumes/BS Calendar", "-quiet"
+    system "hdiutil", "attach", cached_download, "-mountpoint", "/Volumes/BS Calendar", "-nobrowse", "-quiet"
     
-    # Copy the app
-    prefix.install "/Volumes/BS Calendar/bs-calendar.app"
+    # Copy the app using ditto to preserve permissions and signatures
+    system "ditto", "/Volumes/BS Calendar/bs-calendar.app", "#{prefix}/bs-calendar.app"
     
     # Unmount
     system "hdiutil", "detach", "/Volumes/BS Calendar", "-quiet"
