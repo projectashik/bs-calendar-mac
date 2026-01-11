@@ -8,36 +8,39 @@ class BsCalendar < Formula
   depends_on macos: :ventura
 
   def install
-    # Mount the DMG
-    system "hdiutil", "attach", cached_download, "-mountpoint", "/Volumes/BS Calendar", "-nobrowse", "-quiet"
+    # Mount the DMG to /tmp to avoid conflicts
+    system "hdiutil", "attach", cached_download, "-mountpoint", "/tmp/bs-calendar-dmg", "-nobrowse", "-quiet"
     
-    # Copy the app using ditto to preserve permissions and signatures
-    system "ditto", "/Volumes/BS Calendar/bs-calendar.app", "#{prefix}/bs-calendar.app"
+    # Copy the app using cp -R
+    system "cp", "-R", "/tmp/bs-calendar-dmg/bs-calendar.app", "#{prefix}/"
     
     # Unmount
-    system "hdiutil", "detach", "/Volumes/BS Calendar", "-quiet"
+    system "hdiutil", "detach", "/tmp/bs-calendar-dmg", "-force", "-quiet"
     
     # Create a wrapper script
     (bin/"bs-calendar").write <<~EOS
       #!/bin/bash
       open "#{prefix}/bs-calendar.app"
     EOS
+    
+    chmod 0755, bin/"bs-calendar"
+  end
+
+  def post_install
+    # Remove quarantine attribute automatically
+    system "xattr", "-cr", "#{prefix}/bs-calendar.app"
   end
 
   def caveats
     <<~EOS
-      BS Calendar has been installed to:
-        #{prefix}/bs-calendar.app
+      BS Calendar has been installed!
 
-      To launch BS Calendar:
+      To launch:
         bs-calendar
 
-      Or open from Applications:
-        open #{prefix}/bs-calendar.app
+      Or use Spotlight to search for "BS Calendar"
 
-      Note: On first launch, you may need to:
-        1. Right-click the app → Open
-        2. Or run: xattr -cr "#{prefix}/bs-calendar.app"
+      The app will appear in your menu bar when launched.
     EOS
   end
 
