@@ -7,6 +7,7 @@
 
 import AppKit
 import SwiftUI
+import Combine
 
 class StatusBarController: ObservableObject {
     private var statusItem: NSStatusItem!
