@@ -25,10 +25,49 @@ class StatusBarController: ObservableObject {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
         if let button = statusItem.button {
-            button.action = #selector(togglePopover)
+            button.action = #selector(handleClick(_:))
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
+    }
+    
+    @objc func handleClick(_ sender: NSStatusBarButton) {
+        let event = NSApp.currentEvent!
+        
+        if event.type == .rightMouseUp {
+            showMenu()
+        } else {
+            togglePopover()
+        }
+    }
+    
+    private func showMenu() {
+        let menu = NSMenu()
+        
+        menu.addItem(NSMenuItem(title: "Preferences...", action: #selector(openPreferences), keyEquivalent: ","))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit BS Calendar", action: #selector(quitApp), keyEquivalent: "q"))
+        
+        statusItem.menu = menu
+        statusItem.button?.performClick(nil)
+        statusItem.menu = nil
+    }
+    
+    @objc func openPreferences() {
+        let preferencesView = PreferencesView()
+        let hostingController = NSHostingController(rootView: preferencesView)
+        
+        let window = NSWindow(contentViewController: hostingController)
+        window.title = "Preferences"
+        window.styleMask = [.titled, .closable]
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        
+        NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    @objc func quitApp() {
+        NSApplication.shared.terminate(nil)
     }
     
     private func setupPopover() {
