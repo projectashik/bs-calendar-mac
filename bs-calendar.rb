@@ -27,19 +27,20 @@ class BsCalendar < Formula
   end
 
   def post_install
-    # Remove quarantine attribute automatically
-    system "xattr", "-cr", "#{prefix}/bs-calendar.app"
+    # Remove quarantine attribute
+    system "xattr", "-cr", "#{prefix}/bs-calendar.app" rescue nil
     
-    # Create symlink in ~/Applications for Spotlight visibility
+    # Create ~/Applications if it doesn't exist
     app_dir = Pathname.new(File.expand_path("~/Applications"))
-    app_dir.mkpath
+    app_dir.mkpath unless app_dir.exist?
+    
+    # Create symlink
     app_link = app_dir/"bs-calendar.app"
-    
-    # Remove old symlink if exists
     app_link.delete if app_link.exist? || app_link.symlink?
+    FileUtils.ln_sf("#{prefix}/bs-calendar.app", app_link)
     
-    # Create new symlink
-    app_link.make_symlink("#{prefix}/bs-calendar.app")
+    # Open the app once to register with system
+    system "open", "#{prefix}/bs-calendar.app"
   end
 
   def uninstall_postflight
