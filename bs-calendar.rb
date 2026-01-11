@@ -1,9 +1,9 @@
 class BsCalendar < Formula
   desc "Nepali (Bikram Sambat) calendar in your macOS menu bar"
-  homepage "https://github.com/projectashik/bs-calendar"
-  version "v1.0.4-dc098eb"
-  url "https://github.com/projectashik/bs-calendar/releases/download/v1.0.4-dc098eb/bs-calendar-macos.dmg"
-  sha256 "8db72a1ea871d8ef6bfaf4cf942a8aec9d105535618cc42baccc79450233aef5"
+  homepage "https://github.com/projectashik/bs-calendar-mac"
+  version "VERSION_PLACEHOLDER"
+  url "https://github.com/projectashik/bs-calendar-mac/releases/download/VERSION_PLACEHOLDER/bs-calendar-macos.dmg"
+  sha256 "SHA256_PLACEHOLDER"
 
   depends_on macos: ">= :ventura"
 
