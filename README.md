@@ -30,6 +30,20 @@ A lightweight, high-performance macOS menu bar application that displays the cur
 
 ## Installation
 
+### Homebrew (Recommended)
+
+```bash
+brew tap projectashik/bs-calendar
+brew install bs-calendar
+```
+
+### Manual Download
+
+1. Download the latest `bs-calendar-macos.dmg` from [Releases](https://github.com/projectashik/bs-calendar/releases)
+2. Open the DMG file
+3. Drag `bs-calendar.app` to Applications folder
+4. Right-click the app → **Open** (first time only)
+
 ### From Source
 
 1. Clone the repository:
