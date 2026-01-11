@@ -167,4 +167,4 @@ jobs:
           echo "✅ Build successful!"
           echo "📦 Version: ${{ steps.version.outputs.version }}"
           echo "🔗 Release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.version }}"
-          echo "📥 Download: https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/bs-calendar-macos.zip"
+          echo "📥 Download: https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/bs-calendar-macos.dmg"
