@@ -1,0 +1,135 @@
+name: Auto Build and Release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get version from commit
+        id: version
+        run: |
+          # Use short commit SHA as version
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          TIMESTAMP=$(date +%Y%m%d-%H%M)
+          VERSION="v1.0.${GITHUB_RUN_NUMBER}-${SHORT_SHA}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "timestamp=${TIMESTAMP}" >> $GITHUB_OUTPUT
+          echo "Building version: ${VERSION}"
+      
+      - name: Build App
+        run: |
+          xcodebuild -project bs-calendar.xcodeproj \
+                     -scheme bs-calendar \
+                     -configuration Release \
+                     -derivedDataPath build \
+                     CODE_SIGN_IDENTITY="" \
+                     CODE_SIGNING_REQUIRED=NO
+      
+      - name: Create ZIP
+        run: |
+          cd build/Build/Products/Release
+          zip -r ../../../../bs-calendar-macos.zip bs-calendar.app
+          cd ../../../../
+          
+          # Get file size
+          SIZE=$(du -h bs-calendar-macos.zip | cut -f1)
+          echo "File size: ${SIZE}"
+          echo "size=${SIZE}" >> $GITHUB_OUTPUT
+        id: package
+      
+      - name: Delete old releases (keep last 5)
+        run: |
+          # Get all releases except the latest 5
+          gh release list --limit 100 --json tagName,createdAt -q '.[5:] | .[].tagName' | while read tag; do
+            echo "Deleting old release: $tag"
+            gh release delete "$tag" -y || true
+          done
+        env:
+          GH_TOKEN: ${{ github.token }}
+        continue-on-error: true
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: BS Calendar ${{ steps.version.outputs.version }}
+          body: |
+            ## 🎉 Auto-build from latest commit
+            
+            **Version:** `${{ steps.version.outputs.version }}`  
+            **Built:** ${{ steps.version.outputs.timestamp }}  
+            **Commit:** ${{ github.sha }}
+            
+            ---
+            
+            ## 📥 Download
+            
+            **File:** `bs-calendar-macos.zip` (${{ steps.package.outputs.size }})
+            
+            ## 🚀 Quick Install
+            
+            ```bash
+            # Download and install (one command)
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/bs-calendar-macos.zip -o ~/Downloads/bs-calendar.zip
+            unzip ~/Downloads/bs-calendar.zip -d ~/Downloads/
+            mv ~/Downloads/bs-calendar.app /Applications/
+            xattr -cr /Applications/bs-calendar.app
+            open /Applications/bs-calendar.app
+            ```
+            
+            ## 📋 Manual Install
+            
+            1. Download `bs-calendar-macos.zip` below
+            2. Extract the ZIP file
+            3. Move `bs-calendar.app` to Applications folder
+            4. Right-click app → **Open** (first time only)
+            
+            ## ✨ Features
+            
+            - 📅 Menu bar Nepali calendar display
+            - 🇳🇵 Nepali numerals support (०१२३)
+            - 🎨 Auto Light/Dark theme
+            - 🚀 Launch at login option
+            - ⚡ Lightweight (< 20MB RAM)
+            
+            ## 📋 Requirements
+            
+            - macOS 13.0 (Ventura) or later
+            - Apple Silicon or Intel Mac
+            
+            ---
+            
+            ### 📝 Recent Changes
+            
+            ${{ github.event.head_commit.message }}
+            
+            **Changed files:**
+            ```
+            ${{ github.event.commits[0].modified }}
+            ```
+          files: bs-calendar-macos.zip
+          draft: false
+          prerelease: false
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Success Summary
+        run: |
+          echo "✅ Build successful!"
+          echo "📦 Version: ${{ steps.version.outputs.version }}"
+          echo "🔗 Release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.version }}"
+          echo "📥 Download: https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/bs-calendar-macos.zip"
