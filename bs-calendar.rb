@@ -11,10 +11,8 @@ class BsCalendar < Formula
     # Mount the DMG to /tmp to avoid conflicts
     system "hdiutil", "attach", cached_download, "-mountpoint", "/tmp/bs-calendar-dmg", "-nobrowse", "-quiet"
     
-    # Install to /Applications for Spotlight visibility
-    app = Pathname.new("/Applications/bs-calendar.app")
-    FileUtils.rm_rf(app) if app.exist?
-    system "cp", "-R", "/tmp/bs-calendar-dmg/bs-calendar.app", "/Applications/"
+    # Copy to Homebrew prefix, then symlink to /Applications
+    system "cp", "-R", "/tmp/bs-calendar-dmg/bs-calendar.app", "#{prefix}/"
     
     # Unmount
     system "hdiutil", "detach", "/tmp/bs-calendar-dmg", "-force", "-quiet"
@@ -22,7 +20,7 @@ class BsCalendar < Formula
     # Create a wrapper script
     (bin/"bs-calendar").write <<~EOS
       #!/bin/bash
-      open /Applications/bs-calendar.app
+      open "#{prefix}/bs-calendar.app"
     EOS
     
     chmod 0755, bin/"bs-calendar"
@@ -30,19 +28,36 @@ class BsCalendar < Formula
 
   def post_install
     # Remove quarantine attribute automatically
-    system "xattr", "-cr", "/Applications/bs-calendar.app"
+    system "xattr", "-cr", "#{prefix}/bs-calendar.app"
+    
+    # Create symlink in ~/Applications for Spotlight visibility
+    app_dir = Pathname.new(File.expand_path("~/Applications"))
+    app_dir.mkpath
+    app_link = app_dir/"bs-calendar.app"
+    
+    # Remove old symlink if exists
+    app_link.delete if app_link.exist? || app_link.symlink?
+    
+    # Create new symlink
+    app_link.make_symlink("#{prefix}/bs-calendar.app")
+  end
+
+  def uninstall_postflight
+    # Remove symlink on uninstall
+    app_link = Pathname.new(File.expand_path("~/Applications/bs-calendar.app"))
+    app_link.delete if app_link.symlink?
   end
 
   def caveats
     <<~EOS
-      BS Calendar has been installed to /Applications!
+      BS Calendar has been installed!
 
       To launch:
         bs-calendar
 
       Or use Spotlight (⌘+Space) to search for "BS Calendar"
 
-      The app will appear in your menu bar when launched.
+      The app is available in ~/Applications and will appear in your menu bar when launched.
     EOS
   end
 
