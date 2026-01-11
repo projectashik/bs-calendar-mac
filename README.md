@@ -39,7 +39,7 @@ brew install bs-calendar
 
 ### Manual Download
 
-1. Download the latest `bs-calendar-macos.dmg` from [Releases](https://github.com/projectashik/bs-calendar/releases)
+1. Download the latest `bs-calendar-macos.dmg` from [Releases](https://github.com/projectashik/bs-calendar-mac/releases)
 2. Open the DMG file
 3. Drag `bs-calendar.app` to Applications folder
 4. Right-click the app → **Open** (first time only)
@@ -48,8 +48,8 @@ brew install bs-calendar
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/projectashik/bs-calendar.git
-cd bs-calendar
+git clone https://github.com/projectashik/bs-calendar-mac.git
+cd bs-calendar-mac
 ```
 
 2. Open in Xcode:
