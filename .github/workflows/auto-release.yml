@@ -125,12 +125,20 @@ jobs:
             
             ---
             
-            ## 📥 Download
+            ## 📥 Installation
+            
+            ### Option 1: Homebrew (Recommended)
+            
+            ```bash
+            brew tap projectashik/bs-calendar
+            brew install bs-calendar
+            ```
+            
+            ### Option 2: Manual Download
             
             **File:** `bs-calendar-macos.dmg` (${{ steps.package.outputs.size }})
             
-            ## 🚀 Installation
-            
+            **Steps:**
             1. Download `bs-calendar-macos.dmg` below
             2. Open the DMG file
             3. Drag `bs-calendar.app` to the **Applications** folder
@@ -173,9 +181,38 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
+      - name: Update Homebrew Formula
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DMG_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/bs-calendar-macos.dmg"
+          
+          # Calculate SHA256 of the DMG
+          SHA256=$(shasum -a 256 bs-calendar-macos.dmg | awk '{print $1}')
+          echo "SHA256: ${SHA256}"
+          
+          # Update the formula file
+          sed -i '' "s/VERSION_PLACEHOLDER/${VERSION}/g" bs-calendar.rb
+          sed -i '' "s/SHA256_PLACEHOLDER/${SHA256}/g" bs-calendar.rb
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Commit and push the updated formula
+          git add bs-calendar.rb
+          git commit -m "Update Homebrew formula to ${VERSION}" || echo "No changes to commit"
+          git push origin main || echo "Push failed, continuing..."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+      
       - name: Success Summary
         run: |
           echo "✅ Build successful!"
           echo "📦 Version: ${{ steps.version.outputs.version }}"
           echo "🔗 Release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.version }}"
           echo "📥 Download: https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/bs-calendar-macos.dmg"
+          echo ""
+          echo "🍺 Homebrew install:"
+          echo "   brew tap projectashik/bs-calendar"
+          echo "   brew install bs-calendar"
