@@ -19,6 +19,17 @@ class StatusBarController: ObservableObject {
         setupPopover()
         updateMenuBarTitle()
         startTimer()
+        observePreferences()
+    }
+    
+    private func observePreferences() {
+        NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateMenuBarTitle()
+        }
     }
     
     private func setupStatusItem() {
