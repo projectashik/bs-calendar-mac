@@ -11,7 +11,7 @@ struct PreferencesView: View {
     @AppStorage("useNepaliNumerals") private var useNepaliNumerals = true
     @AppStorage("showMonthInMenuBar") private var showMonthInMenuBar = false
     @AppStorage("weekStartDay") private var weekStartDay = 0
-    @AppStorage("launchAtLogin") private var launchAtLogin = false
+    @State private var launchAtLogin = LaunchAtLogin.shared.isEnabled
     
     var body: some View {
         VStack(spacing: 0) {
@@ -37,6 +37,9 @@ struct PreferencesView: View {
                 Section(header: Text("General").font(.headline)) {
                     Toggle("Launch at Login", isOn: $launchAtLogin)
                         .help("Start BS Calendar automatically when you log in")
+                        .onChange(of: launchAtLogin) { newValue in
+                            LaunchAtLogin.shared.isEnabled = newValue
+                        }
                 }
             }
             .formStyle(.grouped)
